@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     if not FROM_ZERO and len(glob.glob(os.path.join(ckpt_folder, '*.pt'))) > 0:
         # load the last ckpt
-        checkpoint = torch.load(glob.glob(os.path.join(ckpt_folder, '*.pt'))[-1])
+        checkpoint = torch.load(glob.glob(os.path.join(ckpt_folder, '*.pt'))[-1], weights_only=False, map_location=torch.device('cpu'))
         net.load_state_dict(checkpoint['model_G_state_dict'])
         last_episode_id = checkpoint['episode_id']
         REWARDS = checkpoint['REWARDS']

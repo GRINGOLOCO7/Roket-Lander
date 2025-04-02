@@ -77,6 +77,7 @@ def rotation_matrix(rx=0., ry=0., rz=0.):
 
     # RZ * RY * RX
     RotationMatrix = np.mat(Rz) * np.mat(Ry) * np.mat(Rx)
+    #RotationMatrix = np.asmatrix(Rz) @ np.asmatrix(Ry) @ np.asmatrix(Rx)
 
     return np.array(RotationMatrix)
 
