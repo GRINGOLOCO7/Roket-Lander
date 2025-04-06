@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     net = ActorCritic(input_dim=env.state_dims, output_dim=env.action_dims).to(device)
     if ckpt_dir and os.path.exists(ckpt_dir):
-        checkpoint = torch.load(ckpt_dir)
+        checkpoint = torch.load(ckpt_dir, weights_only=False, map_location=torch.device('cpu'))
         net.load_state_dict(checkpoint['model_G_state_dict'])
 
     state = env.reset()
@@ -31,4 +31,3 @@ if __name__ == '__main__':
         env.render(window_name='test')
         if env.already_crash:
             break
- 
