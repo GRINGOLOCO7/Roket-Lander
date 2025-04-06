@@ -25,7 +25,7 @@ if __name__ == '__main__':
     max_steps = 800
 
     env = Rocket(task=task, max_steps=max_steps)
-    ckpt_folder = os.path.join('./', task + '_ckpt')
+    ckpt_folder = os.path.join('./', task + '_entropy_ckpt')
     if not os.path.exists(ckpt_folder):
         os.mkdir(ckpt_folder)
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         state = env.reset()
         rewards, log_probs, values, masks = [], [], [], []
         for step_id in range(max_steps):
-            action, log_prob, value = net.get_action(state)
+            action, log_prob, value, probs = net.get_action(state)
             state, reward, done, _ = env.step(action)
             rewards.append(reward)
             log_probs.append(log_prob)
@@ -58,8 +58,8 @@ if __name__ == '__main__':
                 env.render()
 
             if done or step_id == max_steps-1:
-                _, _, Qval = net.get_action(state)
-                net.update_ac(net, rewards, log_probs, values, masks, Qval, gamma=0.999)
+                _, _, Qval, probs = net.get_action(state)
+                net.update_ac(net, rewards, log_probs, values, masks, Qval, probs, gamma=0.999)
                 break
 
         REWARDS.append(np.sum(rewards))

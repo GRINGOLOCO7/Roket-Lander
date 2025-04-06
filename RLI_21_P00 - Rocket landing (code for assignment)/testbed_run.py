@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     state = env.reset()
     for step_id in range(max_steps):
-        action, log_prob, value = net.get_action(state)
+        action, log_prob, value, probs = net.get_action(state)
         state, reward, done, _ = env.step(action)
         env.render(window_name='test')
         if env.already_crash:
