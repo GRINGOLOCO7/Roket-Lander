@@ -16,8 +16,10 @@ SAVE_PLOT = False
 
 if __name__ == '__main__':
 
-    task = 'hover'   # 'hover' or 'landing'
+    #task = 'hover'   # 'hover' or 'landing'
+    ''' Hover reward -> distance from target and angle of roket (more vertical)'''
     task = 'landing' # 'hover' or 'landing'
+    ''' Landing reward -> distance from target and angle of roket (more vertical) and speed'''
 
     max_m_episode = 800_000
     max_steps = 800
