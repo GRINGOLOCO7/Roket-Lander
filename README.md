@@ -68,25 +68,7 @@ class ActorCritic(nn.Module):
 The actor outputs action probabilities, while the critic estimates the value of being in a particular state.
 
 </details>
-<details>
-<summary>Positional Encoding</summary>
 
-The `ActorCritic` class combines policy (actor) and value (critic) networks:
-
-```python
-class ActorCritic(nn.Module):
-    def __init__(self, input_dim, output_dim, hidden_layers=2, hidden_size=128, L=7, learning_rate=5e-5):
-        # input_dim: dimension of state space
-        # output_dim: dimension of action space
-        # L: positional encoding parameter
-
-        self.actor = MLP(input_dim, output_dim)  # Decides actions
-        self.critic = MLP(input_dim, 1)          # Estimates value
-```
-
-The actor outputs action probabilities, while the critic estimates the value of being in a particular state.
-
-</details>
 <details>
 <summary>Positional Encoding</summary>
 
