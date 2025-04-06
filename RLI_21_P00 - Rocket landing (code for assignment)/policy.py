@@ -160,6 +160,14 @@ class ActorCritic(nn.Module):
         values = torch.stack(values)
         advantage = Qvals - values
 
+        """
+        ⚠️ unstitched code⚠️
+        # In case of A2C to SAC:
+        policy_dist = probs # returned by self.forward()
+        dist = policy_dist.detach().numpy()
+        entropy = -np.sum(np.mean(dist) * np.log(dist))
+        entropy_term += entropy
+        """
         # Entropy term
         entropies = []
         for probs in probs_list:
@@ -169,8 +177,12 @@ class ActorCritic(nn.Module):
 
         actor_loss = (-log_probs * advantage.detach()).mean()
         critic_loss = 0.5 * advantage.pow(2).mean()
-
-        ac_loss = actor_loss + critic_loss - 0.001 * entropy_term  # entropy regularization
+        """
+        ⚠️ unstitched code⚠️
+        # In case of A2C to SAC:
+        ac_loss = actor_loss + critic_loss + 0.001 * entropy_term
+        """
+        ac_loss = actor_loss + critic_loss + 0.001 * entropy_term  # entropy regularization
 
         network.optimizer.zero_grad()
         ac_loss.backward()

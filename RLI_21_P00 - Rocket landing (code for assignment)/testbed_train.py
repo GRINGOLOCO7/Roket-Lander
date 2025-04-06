@@ -19,13 +19,17 @@ if __name__ == '__main__':
     #task = 'hover'   # 'hover' or 'landing'
     ''' Hover reward -> distance from target and angle of roket (more vertical)'''
     task = 'landing' # 'hover' or 'landing'
+    entropy = True # or False -> just to chose correct folder for checkpoint
     ''' Landing reward -> distance from target and angle of roket (more vertical) and speed'''
 
     max_m_episode = 800_000
     max_steps = 800
 
     env = Rocket(task=task, max_steps=max_steps)
-    ckpt_folder = os.path.join('./', task + '_entropy_ckpt')
+    if entropy:
+        ckpt_folder = os.path.join('./', task + '_entropy_ckpt')
+    else:
+        ckpt_folder = os.path.join('./', task + '_ckpt')
     if not os.path.exists(ckpt_folder):
         os.mkdir(ckpt_folder)
 
