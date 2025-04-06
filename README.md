@@ -16,16 +16,13 @@ On Window:
 7. Install andy other libraries required (just use `pip`)
 
 <br>
-<br>
-<br>
-<br>
+
+
 
 ---
 
 
-<br>
-<br>
-<br>
+
 <br>
 
 
