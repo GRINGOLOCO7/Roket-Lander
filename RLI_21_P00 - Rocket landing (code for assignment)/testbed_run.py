@@ -13,7 +13,7 @@ if __name__ == '__main__':
     task = 'landing' # 'hover' or 'landing'
 
     max_steps = 800
-    ckpt_dir = glob.glob(os.path.join(task+'_ckpt', '*.pt'))
+    ckpt_dir = glob.glob(os.path.join(task+'_entropy_ckpt', '*.pt'))
     if ckpt_dir: ckpt_dir = ckpt_dir[-1]  # last ckpt
     print(ckpt_dir)
 
