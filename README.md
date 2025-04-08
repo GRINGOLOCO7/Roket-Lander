@@ -153,7 +153,7 @@ def update_ac(network, rewards, log_probs, values, masks, Qval, probs_list, gamm
     ac_loss.backward()
     network.optimizer.step()
 ```
-<details>
+</details>
 
 
 ### 📜 Code 2: Without Entropy Regularization
@@ -182,8 +182,7 @@ def update_ac(network, rewards, log_probs, values, masks, Qval, gamma=GAMMA):
     ac_loss.backward()
     network.optimizer.step()
 ```
-
-<details>
+</details>
 
 ## 🔍 Side-by-Side Comparison
 
