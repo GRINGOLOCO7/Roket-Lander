@@ -18,6 +18,14 @@ On Window:
 <br>
 
 
+## Files
+
+- `rocket_env.py`: Wrapper using `rocket.py` to make _Gymnasium_ compatible environment
+- `test_env.py`: Script just to test the `rocket_env.py`
+- `policy.py`: Script for definign policy for SAC (using entropy term)
+- `testbed_run.py`: Script to decide the task (_hover_ or _landing_) and the model checkpoint to use (_landing_ckpt_ or _landing_entropy_ckpt_)
+- `testbed_train.py`: Script to train using `policy.py` (it will automaticly train with entropy term, and save the checpoints in _landing_entropy_ckpt_)
+- `testbed_rewards.ipynb`: Plot model structure and rewards over training
 
 ---
 
