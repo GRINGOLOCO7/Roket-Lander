@@ -42,11 +42,12 @@ Actor-Critic is a reinforcement learning method that combines the strengths of b
 
 In other words, the actor decides what action to carry out and the critic judges how good that decision was. The utilization of the Actor-Critic method enables the agent to optimize its policy by using the judgement and feedback of the Critic and increases learning efficiency, instead of using methods such as REINFORCE (trial-and-error).
 
-### How does Actor-Critic combine Policy-based and Value-based methods?
-| Component            | Role                                             | How does it learn?                           |
-|----------------------|--------------------------------------------------|----------------------------------------------|
-| Policy-based (Actor) | Learns the action selection policy π(a|s)        | Optimized using gradients from the critic    |
-| Value-based (Critic) | Learns the value function of each state          | Trained using temporal difference (TD) errors |
+### How does Actor–Critic combine Policy-based and Value-based methods?
+
+| Component              | Role                                     | How does it learn?                           |
+|------------------------|------------------------------------------|----------------------------------------------|
+| Policy-based (Actor)   | Learns the action selection policy π(a\|s) | Optimized using gradients from the critic    |
+| Value-based (Critic)   | Learns the value function of each state  | Trained using temporal difference (TD) errors |
 
 By applying the combination of these to methods, Actor-Critic can take advantage of the strengths of both, and this will result in a model that has:
 - Low degree of variance due to bootstrapping perform by the critic
@@ -249,7 +250,8 @@ This is a regularization technique used in reinforcement learning to encourage t
 
 Through using entropy regularization, the model can explore more diverse actions and have better exploration earlier on in training, and avoid being stuck at the local optima or continuously picking the same actions.
 
-The entropy of the policy is calculated using the equation
+The entropy of the policy is calculated using the equation:
+
 $$- \sum_a \pi(a \mid s) \log \pi(a \mid s)$$
 
 Which was implemented in our code in the form of
