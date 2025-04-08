@@ -5,8 +5,9 @@ from rocket_env import RocketEnv
 gym.register(
     id='Rocket-v0',
     entry_point='rocket_env:RocketEnv',
-    kwargs={'task': 'landing', 'rocket_type': 'falcon', 'render_mode': 'human'}
-)
+    kwargs={'task': 'landing', 'rocket_type': 'starship', 'render_mode': 'human'}
+)   # 'rocket_type': 'starship' or 'falcon'
+    # 'task': 'landing' or 'hover'
 
 # Create and use the environment
 env = gym.make('Rocket-v0')
