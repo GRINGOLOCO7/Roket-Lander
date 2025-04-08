@@ -20,16 +20,22 @@ On Window:
 
 ## Files
 
+
 - `rocket_env.py`: Wrapper using `rocket.py` to make _Gymnasium_ compatible environment
-- `test_env.py`: Script just to test the `rocket_env.py`
+- `test_env.py`: Script just to test that `rocket_env.py` wrapper works
 - `policy.py`: Script for definign policy for SAC (using entropy term)
 - `testbed_run.py`: Script to decide the task (_hover_ or _landing_) and the model checkpoint to use (_landing_ckpt_ or _landing_entropy_ckpt_)
 - `testbed_train.py`: Script to train using `policy.py` (it will automaticly train with entropy term, and save the checpoints in _landing_entropy_ckpt_)
 - `testbed_rewards.ipynb`: Plot model structure and rewards over training
+- `/landing_ckpt`: Contains the checkpoints before adding entropy term to policy
+- `/landing_entropy_ckpt`: Contains the checkpoints after adding entropy term to policy
+
+> [!CAUTION]
+> `rocket_env_dummy.py`: Wrapper using `rocket.py` to make _Gymnasium_ compatible environment
 
 ---
 
-
+![actor critic](https://github.com/GRINGOLOCO7/Roket-Lander/blob/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/actor_critic.png)
 
 <br>
 
@@ -292,6 +298,22 @@ In the context of the Actor-Critic, this is very crucial because without entropy
 | **Loss Function**              | `actor_loss + critic_loss + 0.001 * entropy_term` | `actor_loss + critic_loss` |
 | **Policy Behavior**            | Stochastic, exploratory      | Deterministic, greedy      |
 | **Best Use Case**              | Complex tasks, sparse rewards | Simpler tasks, stable policies |
+
+
+<p align="center">
+  <div style="display: flex; flex-direction: row; justify-content: center; gap: 20px;">
+    <div style="text-align: center;">
+      <p><strong>avg reward with entropy</strong></p>
+      <img src="https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/avg_reward_with_entropy.png" width="400"/>
+    </div>
+    <div style="text-align: center;">
+      <p><strong>avg reward without entropy</strong></p>
+      <img src="https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/avg_reward_without_entropy.png" width="400"/>
+    </div>
+  </div>
+</p>
+
+
 
 ---
 
