@@ -144,9 +144,7 @@ actor_loss = (-log_probs * advantage.detach()).mean()
 ```
 
 This is derived from the policy gradient theorem, which states that a policy parameter can be updated using the equation:
-\[
-\nabla_\theta J(\theta) = \mathbb{E} \left[ \nabla_\theta \log \pi(a \mid s; \theta) \cdot A(s, a) \right]
-\]
+$$\nabla J(\theta) = \mathbb{E} \left[ \nabla_\theta \log \pi(a \mid s; \theta) \cdot A(s, a) \right]$$
 
 The log_probs is the log part of the equation, and the advantage is represented as the scalar signal that reflects how good or bad the action was. When the advantage is used, it is associated with the .detach() function to ensure that it is treated as a constant value during backpropagation when running the policy, which prevents gradients from the actor’s loss to influence the critic’s decision.
 
