@@ -49,7 +49,7 @@ In other words, the actor decides what action to carry out and the critic judges
 | Value-based (Critic) | Learns the value function of each state          | Trained using temporal difference (TD) errors |
 
 By applying the combination of these to methods, Actor-Critic can take advantage of the strengths of both, and this will result in a model that has:
-- Low degree of variance due to bootstrapping perform by the critic 
+- Low degree of variance due to bootstrapping perform by the critic
 - Online learning use either 1-step or multi-step returns
 - A good balance or tradeoff between bias and variance through temporal difference learning
 
@@ -132,11 +132,11 @@ Before implementing the Entropy Regularizatoin, we have to better understand how
 
 The `update_ac()` function represents the main function that contributes towards the learning process in the Actor-Critic implementation in the code. It updates the parameters of both the actor and the critic as the model learns and finds the best actions with high value, while using a combination of gradients derived from the returns and the estimated value, and this can be seen in the following code snippet:
 
-The function also uses the concept of the advantage. The advantage basically quantifies how much better or worse an action that is being performed is in comparison with the expected value of the state. 
+The function also uses the concept of the advantage. The advantage basically quantifies how much better or worse an action that is being performed is in comparison with the expected value of the state.
 ```python
 advantage = Qvals - values
 ```
-This uses the discounted return Q as a Monte Carlo estimate of Q(s,a) and the value function is predicted by the critic. This line tells the actor whether an action carried out is better or worse than expected and by how much, acting as a guide towards how to change the direction and magnitude when updating the policy. 
+This uses the discounted return Q as a Monte Carlo estimate of Q(s,a) and the value function is predicted by the critic. This line tells the actor whether an action carried out is better or worse than expected and by how much, acting as a guide towards how to change the direction and magnitude when updating the policy.
 
 ### Actor's Loss
 ```python
@@ -150,7 +150,7 @@ This is derived from the policy gradient theorem, which states that a policy par
 
 The log_probs is the log part of the equation, and the advantage is represented as the scalar signal that reflects how good or bad the action was. When the advantage is used, it is associated with the .detach() function to ensure that it is treated as a constant value during backpropagation when running the policy, which prevents gradients from the actor’s loss to influence the critic’s decision.
 
-To calculate the actor loss, we multiplied the two terms and took the negative mean. The negative mean is required because Pytorch uses this value to minimize the loss function and maximize the policy performance. 
+To calculate the actor loss, we multiplied the two terms and took the negative mean. The negative mean is required because Pytorch uses this value to minimize the loss function and maximize the policy performance.
 
 ### Critic's Loss
 ```python
@@ -159,13 +159,13 @@ critic_loss = 0.5 * advantage.pow(2).mean()
 
 The critic’s loss is basically the mean squared error between the predicted value and the target value. This is because the critic estimates the state’s value and wants the theoretical value to be as close to the actual return, Q(s,a), and in return minimize the MSE between the predicted/theoretical value and the actual value.
 
-We then compute the total loss 
+We then compute the total loss
 ```python
 ac_loss = actor_loss + critic_loss
 ```
 To perform backpropagation by first resetting the system from all previous gradients, computing the gradient loss and then updating the network weights the network.optimizer.step(), to give weights to the actions that maximize the policy performance. This in turn will update both the actor and critic network parameters simultaneously using the combination of both the actor and critic losses. This is done by:
 1. network.optimizer.zero_grad() → removes the gradient from the previous run
-2. ac_loss.backward() → computes the new gradients using backpropagation with respect to the parameters of both the actor and critic 
+2. ac_loss.backward() → computes the new gradients using backpropagation with respect to the parameters of both the actor and critic
 3. network.optimizer.step() → updates the model parameters based on the gradients calculated in the previous step to help improve the policy and value function.
 
 
@@ -210,7 +210,7 @@ def update_ac(network, rewards, log_probs, values, masks, Qval, probs_list, gamm
     ac_loss.backward()
     network.optimizer.step()
 ```
-<details>
+</details>
 
 
 
@@ -243,35 +243,35 @@ def update_ac(network, rewards, log_probs, values, masks, Qval, gamma=GAMMA):
     network.optimizer.step()
 ```
 
-<details>
+</details>
 
 ## Entropy Regularization Explanation
-This is a regularization technique used in reinforcement learning to encourage the policy to stay random rather than becoming too specific and eventually overfitting and becoming deterministic. This concept is taken from thermodynamics, where entropy is a measure of the degree of randomness of the particles in a molecule. Entropy regularization is similar, since it depends on how many random actions or the randomness of the policy. High entropy means high randomness, so the model has explored multiple actions (exploration), and low entropy means lower randomness, so the model explored only a few actions (exploitation). Therefore, entropy regularization helps balance the trade-off between exploration and exploitation. 
+This is a regularization technique used in reinforcement learning to encourage the policy to stay random rather than becoming too specific and eventually overfitting and becoming deterministic. This concept is taken from thermodynamics, where entropy is a measure of the degree of randomness of the particles in a molecule. Entropy regularization is similar, since it depends on how many random actions or the randomness of the policy. High entropy means high randomness, so the model has explored multiple actions (exploration), and low entropy means lower randomness, so the model explored only a few actions (exploitation). Therefore, entropy regularization helps balance the trade-off between exploration and exploitation.
 
 Through using entropy regularization, the model can explore more diverse actions and have better exploration earlier on in training, and avoid being stuck at the local optima or continuously picking the same actions.
 
-The entropy of the policy is calculated using the equation 
+The entropy of the policy is calculated using the equation
 \[
 - \sum_a \pi(a \mid s) \log \pi(a \mid s)
 \]
 
-Which was implemented in our code in the form of 
+Which was implemented in our code in the form of
 ```python
 entropy = -torch.sum(probs * torch.log(probs + 1e-9))
 ```
 
-The entropy is then subtracted from the total loss:  
+The entropy is then subtracted from the total loss:
 ```python
 ac_loss = actor_loss + critic_loss + 0.001 * entropy_term  # entropy regularization
 ```
 
-And this follows the equation 
+And this follows the equation
 
 \[
 - \sum_a \pi(a \mid s) \log \pi(a \mid s)
 \]
 
-Where beta, or 0.001 in the case of our code, encourages exploration and looking into multiple new actions. 
+Where beta, or 0.001 in the case of our code, encourages exploration and looking into multiple new actions.
 
 In the context of the Actor-Critic, this is very crucial because without entropy regularization the actor might converge and choose one action without exploring all possible options and this can lead to suboptimal policies, especially in complex environments. But after adding entropy regularization to the code, the actor is encouraged to explore all possible actions during the entire process of training and we can find better solutions due to further explorations. Also, this is crucial because the critic adds stability to the agent, while entropy ensures that the actor continues being stochastic and continues exploring.
 
