@@ -266,9 +266,7 @@ ac_loss = actor_loss + critic_loss + 0.001 * entropy_term  # entropy regularizat
 
 And this follows the equation
 
-\[
-- \sum_a \pi(a \mid s) \log \pi(a \mid s)
-\]
+$$\text{Total Loss} = \text{Actor Loss} + \text{Critic Loss} - \beta \cdot \mathcal{H}(\pi)$$
 
 Where beta, or 0.001 in the case of our code, encourages exploration and looking into multiple new actions.
 
