@@ -69,10 +69,10 @@ class MLP(nn.Module):
         self.layers = [module for module in self.modules() if isinstance(module,nn.Linear)]
 
         negative_slope = 0.2; self.relu = nn.LeakyReLU(negative_slope)
-        
+
         for child in self.named_children(): print(child)
         print(self.layers)
-        
+
 
     def forward(self, x): # x: state
         # shape x: 1 x m_token x m_state
@@ -84,7 +84,7 @@ class MLP(nn.Module):
         x = self.layers[-1](x)
         """
         in the case of the actor, the ouput layer has to be softmax-ed:
-        x = policy_dist 
+        x = policy_dist
         x = F.softmax(self.layers[-1](x), dim=1)
         """
         return x
@@ -99,13 +99,13 @@ class ActorCritic(nn.Module):
 
     Default configuration:
         hidden_layers=2
-        hidden_size=128 
+        hidden_size=128
         positional mapping L=7
         learning_rate = 5e-5
 
     Other configurations to be tried (for simpler problems):
         hidden_layers=0
-        hidden_size=256 
+        hidden_size=256
         No positional mapping L=0
         learning_rate = 3e-4
     """
@@ -148,36 +148,42 @@ class ActorCritic(nn.Module):
 
         log_prob = torch.log(probs[action_id] + 1e-9)
 
-        return action_id, log_prob, value
+        return action_id, log_prob, value, probs
 
     @staticmethod
-    def update_ac(network, rewards, log_probs, values, masks, Qval, gamma=GAMMA):
+    def update_ac(network, rewards, log_probs, values, masks, Qval, probs_list, gamma=GAMMA):
 
-        # compute Q values
         Qvals = calculate_returns(Qval.detach(), rewards, masks, gamma=gamma)
         Qvals = torch.tensor(Qvals, dtype=torch.float32).to(device).detach()
 
         log_probs = torch.stack(log_probs)
+        values = torch.stack(values)
+        advantage = Qvals - values
+
         """
         ⚠️ unstitched code⚠️
         # In case of A2C to SAC:
         policy_dist = probs # returned by self.forward()
-        dist = policy_dist.detach().numpy() 
+        dist = policy_dist.detach().numpy()
         entropy = -np.sum(np.mean(dist) * np.log(dist))
         entropy_term += entropy
         """
-        values = torch.stack(values)
+        # Entropy term
+        entropies = []
+        for probs in probs_list:
+            entropy = -torch.sum(probs * torch.log(probs + 1e-9))
+            entropies.append(entropy)
+        entropy_term = torch.stack(entropies).mean()
 
-        advantage = Qvals - values
         actor_loss = (-log_probs * advantage.detach()).mean()
         critic_loss = 0.5 * advantage.pow(2).mean()
-        ac_loss = actor_loss + critic_loss
         """
         ⚠️ unstitched code⚠️
         # In case of A2C to SAC:
         ac_loss = actor_loss + critic_loss + 0.001 * entropy_term
         """
+        ac_loss = actor_loss + critic_loss + 0.001 * entropy_term  # entropy regularization
+
         network.optimizer.zero_grad()
         ac_loss.backward()
         network.optimizer.step()
-

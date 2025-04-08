@@ -13,7 +13,7 @@ if __name__ == '__main__':
     task = 'landing' # 'hover' or 'landing'
 
     max_steps = 800
-    ckpt_dir = glob.glob(os.path.join(task+'_ckpt', '*.pt'))
+    ckpt_dir = glob.glob(os.path.join(task+'_entropy_ckpt', '*.pt'))
     if ckpt_dir: ckpt_dir = ckpt_dir[-1]  # last ckpt
     print(ckpt_dir)
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     state = env.reset()
     for step_id in range(max_steps):
-        action, log_prob, value = net.get_action(state)
+        action, log_prob, value, probs = net.get_action(state)
         state, reward, done, _ = env.step(action)
         env.render(window_name='test')
         if env.already_crash:

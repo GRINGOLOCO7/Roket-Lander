@@ -111,45 +111,109 @@ Each MLP includes:
 ![actor_critic](https://github.com/GRINGOLOCO7/Roket-Lander/blob/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/actor_critic.png)
 
 </details>
-<details>
-<summary>RL Training Process</summary>
 
-The `update_ac` method implements the Actor-Critic update algorithm:
+
+## 🔁 Actor-Critic Update Function: With vs. Without Entropy Regularization
+
+This section compares two versions of the `update_ac` function used in Actor-Critic methods. The key difference lies in the inclusion of **entropy regularization** — a term used to encourage exploration in reinforcement learning.
+
+---
+
+### 📜 Code 1: With Entropy Regularization
+
+<details>
+<summary>CODE</summary>
+
+```python
+@staticmethod
+def update_ac(network, rewards, log_probs, values, masks, Qval, probs_list, gamma=GAMMA):
+
+    Qvals = calculate_returns(Qval.detach(), rewards, masks, gamma=gamma)
+    Qvals = torch.tensor(Qvals, dtype=torch.float32).to(device).detach()
+
+    log_probs = torch.stack(log_probs)
+    values = torch.stack(values)
+    advantage = Qvals - values
+
+    # ✅ Entropy term computation
+    entropies = []
+    for probs in probs_list:
+        entropy = -torch.sum(probs * torch.log(probs + 1e-9))
+        entropies.append(entropy)
+    entropy_term = torch.stack(entropies).mean()
+
+    # ✅ Losses
+    actor_loss = (-log_probs * advantage.detach()).mean()
+    critic_loss = 0.5 * advantage.pow(2).mean()
+
+    # ✅ Final loss includes entropy regularization
+    ac_loss = actor_loss + critic_loss + 0.001 * entropy_term
+
+    network.optimizer.zero_grad()
+    ac_loss.backward()
+    network.optimizer.step()
+```
+<details>
+
+
+### 📜 Code 2: Without Entropy Regularization
+<details>
+<summary>CODE</summary>
 
 ```python
 @staticmethod
 def update_ac(network, rewards, log_probs, values, masks, Qval, gamma=GAMMA):
-    # Calculate returns (future discounted rewards)
-    Qvals = calculate_returns(Qval.detach(), rewards, masks, gamma=gamma)
 
-    # Calculate advantage (how much better/worse an action was than expected)
+    Qvals = calculate_returns(Qval.detach(), rewards, masks, gamma=gamma)
+    Qvals = torch.tensor(Qvals, dtype=torch.float32).to(device).detach()
+
+    log_probs = torch.stack(log_probs)
+    values = torch.stack(values)
     advantage = Qvals - values
 
-    # Update both networks
+    # ❌ No entropy term
     actor_loss = (-log_probs * advantage.detach()).mean()
     critic_loss = 0.5 * advantage.pow(2).mean()
+
+    # ❌ No entropy regularization added to loss
     ac_loss = actor_loss + critic_loss
+
+    network.optimizer.zero_grad()
+    ac_loss.backward()
+    network.optimizer.step()
 ```
 
-Key concepts:
+<details>
 
-- Returns: Sum of discounted future rewards
-- Advantage: Difference between actual returns and predicted value
-- Actor loss: Encourages actions that led to better-than-expected outcomes
-- Critic loss: Reduces prediction error of the value function
+## 🔍 Side-by-Side Comparison
 
-### Hyperparameters
-The default configuration works well for complex control tasks:
+| Feature                         | Code 1: With Entropy        | Code 2: Without Entropy    |
+|--------------------------------|-----------------------------|----------------------------|
+| **Entropy Regularization**     | ✅ Included                  | ❌ Not included             |
+| **Input: `probs_list`**        | ✅ Required (full distribution at each step) | ❌ Not required             |
+| **Encourages Exploration**     | ✅ Yes (via entropy bonus)   | ❌ No (pure exploitation)   |
+| **Loss Function**              | `actor_loss + critic_loss + 0.001 * entropy_term` | `actor_loss + critic_loss` |
+| **Policy Behavior**            | Stochastic, exploratory      | Deterministic, greedy      |
+| **Best Use Case**              | Complex tasks, sparse rewards | Simpler tasks, stable policies |
 
-- Hidden layers: 2
-- Hidden size: 128
-- Positional encoding: L=7
-- Learning rate: 5e-5
-- Discount factor (gamma): 0.99
+---
 
-For simpler problems, consider:
+### 🧠 Why Use Entropy Regularization?
 
-- Hidden layers: 0
-- Hidden size: 256
-- No positional mapping (L=0)
-- Learning rate: 3e-4
+Entropy helps keep the policy **uncertain** and **diverse** during learning, which can prevent:
+- Overconfidence in suboptimal actions
+- Early convergence to poor strategies
+- Lack of exploration in high-dimensional or sparse-reward environments
+
+**Higher entropy** → More exploration
+**Lower entropy** → More exploitation
+
+> The entropy bonus encourages the agent to keep trying different actions by rewarding randomness in the policy.
+
+---
+
+### 📌 Summary
+
+- ✅ Use **Code 1** because our environment benefits from **exploration**, especially in complex or deceptive reward landscapes.
+- 🚫 Use **Code 2** for environments where exploration is less critical or when your agent already performs well with a more deterministic approach.
+
