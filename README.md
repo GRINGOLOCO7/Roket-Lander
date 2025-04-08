@@ -144,6 +144,7 @@ actor_loss = (-log_probs * advantage.detach()).mean()
 ```
 
 This is derived from the policy gradient theorem, which states that a policy parameter can be updated using the equation:
+
 $$\nabla J(\theta) = \mathbb{E} \left[ \nabla_\theta \log \pi(a \mid s; \theta) \cdot A(s, a) \right]$$
 
 The log_probs is the log part of the equation, and the advantage is represented as the scalar signal that reflects how good or bad the action was. When the advantage is used, it is associated with the .detach() function to ensure that it is treated as a constant value during backpropagation when running the policy, which prevents gradients from the actor’s loss to influence the critic’s decision.
@@ -249,9 +250,7 @@ This is a regularization technique used in reinforcement learning to encourage t
 Through using entropy regularization, the model can explore more diverse actions and have better exploration earlier on in training, and avoid being stuck at the local optima or continuously picking the same actions.
 
 The entropy of the policy is calculated using the equation
-\[
-- \sum_a \pi(a \mid s) \log \pi(a \mid s)
-\]
+$$- \sum_a \pi(a \mid s) \log \pi(a \mid s)$$
 
 Which was implemented in our code in the form of
 ```python
