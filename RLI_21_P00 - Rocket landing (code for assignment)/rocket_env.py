@@ -1,67 +1,113 @@
-"""
-+--------------------------------------------------------------------------------+
-|  WARNING!!!                                                                    |
-|  THIS IS JUST AN STUB FILE (TEMPLATE)                                          |
-|  PROBABLY ALL LINES SHOULD BE CHANGED OR TOTALLY REPLACED IN ORDER TO GET A    |
-|  WORKING FUNCTIONAL VERSION FOR YOUR ASSIGNMENT                                |
-+--------------------------------------------------------------------------------+
-"""
-
-# import gymnasium as gym
-# from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
+import cv2
 from rocket import Rocket
 
+class RocketEnv(gym.Env):
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 20}
 
-class RocketEnv(): # gym.Env
-    metadata = {'render.modes' : ['human','...']}
-    def __init__(self):
-        print("init")
-        self.action_space = spaces.Discrete(3)
-        self.observation_space = spaces.Box(np.array([0, 0, 0, 0, 0]), np.array([10, 10, 10, 10, 10]), dtype=int)
-        self.is_view = True
-        self.rocket = Rocket(max_steps=800)
-        self.memory = []
+    def __init__(self, render_mode=None, task='hover', rocket_type='falcon', max_steps=800):
+        super(RocketEnv, self).__init__()
+        self.task = task
+        self.rocket_type = rocket_type
+        self.max_steps = max_steps
+        self.rocket = Rocket(max_steps=self.max_steps, task=self.task, rocket_type=self.rocket_type)
 
-    def reset(self):
-        mode = self.rocket.mode
-        del self.rocket
-        self.rocket = Rocket(max_steps=800, mode = mode)
-        obs = self.rocket.observe()
-        return obs
+
+        # Observations are dictionaries with the agent's and the target's location.
+        #self.observation_space = spaces.Box(np.array([0, 0, 0, 0, 0]), np.array([10, 10, 10, 10, 10]), dtype=int)
+        # Define the observation space based on the returned state from Rocket
+        # The state is 8-dimensional according to the flatten method
+        low = np.array([-np.inf] * 8, dtype=np.float32)
+        high = np.array([np.inf] * 8, dtype=np.float32)
+        self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
+
+
+        # Define action space based on the action table
+        self.action_space = spaces.Discrete(self.rocket.action_dims) # 3
+
+
+        # target point
+        #if task == 'hover':
+        #    self._target_location = 0, 200, 50
+        #elif task == 'landing':
+        #    self._target_location = 0, self.H/2.0, 50
+        #self._agent_location = self.rocket.create_random_state()
+
+
+        # Set render mode
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
+
+        # Window for rendering
+        self.window = None
+        self.clock = None
+
+
+    def _get_obs(self):
+        return {"agent": self._agent_location, "target": self._target_location}
+
+    def reset(self, seed=None, options=None):
+        # We need the following line to seed self.np_random
+        super().reset(seed=seed)
+        #self._agent_location = self.rocket.create_random_state()
+        #if self.task == 'hover':
+        #    self._target_location = 0, 200, 50
+        #elif self.task == 'landing':
+        #    self._target_location = 0, self.H/2.0, 50
+        #observation = self._get_obs()
+        # Reset the rocket
+        observation = self.rocket.reset()
+
+        # Render if needed
+        if self.render_mode == "human":
+            self._render_frame()
+
+        info = {}
+        return observation, info
 
     def step(self, action):
-        self.rocket.action(action)
-        reward = self.rocket.evaluate() # ¿?
-        done   = self.rocket.is_done()  # ¿?
-        obs    = self.rocket.observe()  # ¿?
-        return obs, reward, done, {'dist':self.rocket.distance, 'check':self.rocket.current_check, 'crash': not self.rocket.is_alive} # what the heck?
+        #observation, reward, terminated, info = self.rocket.action(action)
+        # Take action in the rocket environment
+        observation, reward, done, info = self.rocket.step(action)
 
-    def render(self, mode="human", close=False, msgs=[]):
-        if self.is_view:
-            self.rocket.view_(msgs)
+        # Additional termination conditions could be added here
+        terminated = done
+        truncated = False
 
-    def set_view(self, flag):
-        self.is_view = flag
+        # Render if needed
+        if self.render_mode == "human":
+            self._render_frame()
 
-    def save_memory(self, file):
-        # print(self.memory) # heterogeneus types
-        # np.save(file, self.memory)
-        np.save(file, np.array(self.memory, dtype=object))
-        print(file + " saved")
+        return observation, reward, terminated, truncated, info
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def render(self):
+        """Render the environment."""
+        if self.render_mode == "rgb_array":
+            return self._render_frame()
 
+        elif self.render_mode == "human":
+            self._render_frame()
+            return None
 
+    def _render_frame(self):
+        """Render the current frame."""
+        frame_0, frame_1 = self.rocket.render(window_name='Rocket Environment',
+                                              wait_time=1,
+                                              with_trajectory=True,
+                                              with_camera_tracking=True)
 
-if __name__ == "__main__":
-    print("File __name__ is set to: {}" .format(__name__))
-    # Using the gym library to create the environment
-    # env = gym.make('your_environment_name-v0')
-    from stable_baselines3.common.env_checker import check_env
-    env = RocketEnv()
-    print('CHECK_ENV','OK' if check_env(env) is None else 'ERROR')
-    print(env.observation_space) 
-    print(env.action_space) 
-    print(type(env).__name__)
+        if self.render_mode == "human":
+            # The rocket.render already displays the window
+            return None
+        else:
+            # Return the rendered image
+            return frame_1
+
+    def close(self):
+        """Close the environment."""
+        cv2.destroyAllWindows()
+        if hasattr(self.rocket, 'close'):
+            self.rocket.close()
+
