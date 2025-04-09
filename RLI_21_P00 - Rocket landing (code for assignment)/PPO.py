@@ -32,24 +32,34 @@ model = PPO(
     "MlpPolicy",
     train_env,
     verbose=1,
-    learning_rate=3e-4,
-    n_steps=2048,
-    batch_size=64,
-    n_epochs=10,
-    gamma=0.99,
-    gae_lambda=0.95,
-    clip_range=0.2,
-    ent_coef=0.0,
-    max_grad_norm=0.5
+    #learning_rate=3e-4,
+    #n_steps=2048,
+    #batch_size=64,
+    #n_epochs=10,
+    #gamma=0.99,
+    #gae_lambda=0.95,
+    #clip_range=0.2,
+    #ent_coef=0.0,
+    #max_grad_norm=0.5
 )
 
 # Train the agent
 print("Training the agent...")
-model.learn(total_timesteps=100000)
+model.learn(total_timesteps=1_000_000)
 model.save(f"ppo_rocket_{task}_{rocket_type}")
 
 # Close training environment
 train_env.close()
+
+
+'''
+ep_rew_mean should start increasing over time
+loss should gradually decrease
+explained_variance (currently 0.652) should approach 1.0, which would mean your value function is accurately predicting returns
+'''
+
+
+
 
 # Evaluation
 # ----------
