@@ -338,3 +338,47 @@ Entropy helps keep the policy **uncertain** and **diverse** during learning, whi
 - ✅ Use **Code 1** because our environment benefits from **exploration**, especially in complex or deceptive reward landscapes.
 - 🚫 Use **Code 2** for environments where exploration is less critical or when your agent already performs well with a more deterministic approach.
 
+
+# Converting Environment to OpenAI Gymnaisum Compatible Version.
+There are multiple approaches that we can take to convert the rocket_env.py to one that implements an Open-AI gymnasium compatible version of rocket.py environment. The three approaches we were told to investigate conversions such as refactoring, wrapping and subclassing. Before investigating the pros and cons of each conversion method, we explored the pros and cons of using a gymnasium compatible environment.
+
+## Pros of using Gymnasium
+
+1. Introduces modularity to the code and makes it easier to plug the environment into training loops, wrappers and evaluators.
+
+2. Using gymnasium allows the environment to be reused for multiple frameworks, meaning that once we developed the changes for gymnasium in the rocket_env.py, we can use it for multiple algorithms and frameworks, so it can be reused for PPO, A2C, SAC, etc. 
+
+3. Can be implemented on multi-agent reinforcement learning agents.
+
+4. Works efficiently and effectively with existing training pipelines, such as stable-baseline3 which we are going to be using in the next part.
+
+5. Allows clear differentiation between the simulation logic and the RL wrappers, which enhances the modularity of the code.
+
+6. Promotes consistency and interoperability across projects or files within the same project.
+
+7. Allows us to build models such as SAC, A2C, PPO in an out-of-the-box fashion and build functions for such models accordingly.
+
+## Cons of using Gymnasium
+1. Requires restructuring chunks of the original code to match the gymnasium API
+
+2. Must adhere to the structure and API of gymnasium so that the environment runs correctly with no errors
+
+3. Debugging can be difficult because one error in the environment setup can propagate throughout the entire wrapper
+
+4. The render modes of the environment must be implemented correctly because any missing rendering logic will affect the integration of the environment with the RL logic and the model’s evaluation. 
+
+After researching and discussing the pros and cons of gymnasium, we can see that converting an environment to something that is Open-AI gymnasium compatible has a lot of pros and can help us build functions for algorithms (PPO, SAC, A2C, etc...) out of the box and facilitates the process of building these models.
+
+The second part was to find the best type of conversion so that we just replace the initial code we have with an Open-AI gymnasium compatible version, and we were given three recommendations to choose from, refactoring, wrapping and subclassing. Firstly, we compared these conversions to see which one is best
+
+## Which Type of Conversion to Use?
+### Conversion Approaches
+
+| Type of Conversion | Description | Pros | Cons |
+|--------------------|-------------|------|------|
+| **Refactoring** | TThis involves merging the rocket logic into the environment itself | It simplifies the process of calling on the methods | It does not support modularity in the code and will be harder to maintain and resolve errors because of it being implemented directly in the code for the RL agent |
+| **Wrapping** | This involves creating an adapter class around the `rocket.py` file. | It simplifies the process by decoupling the logic from the environment. | Increases the presence of boilerplates, meaning that sections of the code will be repeated multiple times, as they are needed for the functionality but not for the agent logic. |
+| **Subclassing** | This involves directly subclassing the Gym environment and using a `Rocket` object to delegate the core environment logic, allowing us to reuse the methods in Rocket by just calling them. |  It is simple to implement because it maintains the logic and functionality of `rocket.py` and allows a clear separation between the logic and functionality as well. |  It requires shaping some of the `rocket.py` API so that it is 100% compatible with all files of the RL agent. |
+
+
+We decided to use **subclassing** as it gave us full control over the Gym API while keeping the original rocket.py simulation intact and reusable for all possible functionalities of the code. Also, thai ensures the code is modular and is fully compatible with the Gym API.
