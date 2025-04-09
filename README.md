@@ -14,6 +14,7 @@ On Window:
 5. If needed downgrade `numpy` to be compatible with functions used (`pip install numpy==1.26.4`)
 6. Install `graphviz` and add to EnvVariables
 7. Install andy other libraries required (just use `pip`)
+8. `pip install stable-baselines3[extra] gym` for PPO and other algorithms
 
 <br>
 
@@ -29,6 +30,7 @@ On Window:
 - `testbed_rewards.ipynb`: Plot model structure and rewards over training
 - `/landing_ckpt`: Contains the checkpoints before adding entropy term to policy
 - `/landing_entropy_ckpt`: Contains the checkpoints after adding entropy term to policy
+- `PPO.py`: Uses the gymnasum compatible environment to trin starship how to land using PPO from stable baseline3
 
 > [!CAUTION]
 > `rocket_env_dummy.py`: Wrapper using `rocket.py` to make _Gymnasium_ compatible environment
