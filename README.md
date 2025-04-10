@@ -1,6 +1,11 @@
 # Roket-Lander
 RL for teaching roket to land using **Soft Actor Critic** (SAC)
 
+
+
+RESULTS [HERE](https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/videos/results.mp4)
+
+![HERE](https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/RLI_21_P00%20-%20Rocket%20landing%20(code%20for%20assignment)/videos/results.mp4)
 ----
 
 # Set Up Environment
@@ -346,7 +351,7 @@ There are multiple approaches that we can take to convert the rocket_env.py to o
 
 1. Introduces modularity to the code and makes it easier to plug the environment into training loops, wrappers and evaluators.
 
-2. Using gymnasium allows the environment to be reused for multiple frameworks, meaning that once we developed the changes for gymnasium in the rocket_env.py, we can use it for multiple algorithms and frameworks, so it can be reused for PPO, A2C, SAC, etc. 
+2. Using gymnasium allows the environment to be reused for multiple frameworks, meaning that once we developed the changes for gymnasium in the rocket_env.py, we can use it for multiple algorithms and frameworks, so it can be reused for PPO, A2C, SAC, etc.
 
 3. Can be implemented on multi-agent reinforcement learning agents.
 
@@ -365,7 +370,7 @@ There are multiple approaches that we can take to convert the rocket_env.py to o
 
 3. Debugging can be difficult because one error in the environment setup can propagate throughout the entire wrapper
 
-4. The render modes of the environment must be implemented correctly because any missing rendering logic will affect the integration of the environment with the RL logic and the model’s evaluation. 
+4. The render modes of the environment must be implemented correctly because any missing rendering logic will affect the integration of the environment with the RL logic and the model’s evaluation.
 
 After researching and discussing the pros and cons of gymnasium, we can see that converting an environment to something that is Open-AI gymnasium compatible has a lot of pros and can help us build functions for algorithms (PPO, SAC, A2C, etc...) out of the box and facilitates the process of building these models.
 
