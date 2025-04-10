@@ -13,7 +13,18 @@ def moving_avg(x, N=500):
 
 
 def load_bg_img(path_to_img, w, h):
+    # Check if path_to_img is None or the file doesn't exist
+    if path_to_img is None:
+        # Return a blank (black) background image instead
+        return np.zeros((h, w, 3), dtype=np.uint8)
+    
     bg_img = cv2.imread(path_to_img, cv2.IMREAD_COLOR)
+    
+    # Check if image loading failed
+    if bg_img is None:
+        print(f"Warning: Failed to load background image from {path_to_img}. Using blank background instead.")
+        return np.zeros((h, w, 3), dtype=np.uint8)
+    
     bg_img = cv2.cvtColor(bg_img, cv2.COLOR_BGR2RGB)
     bg_img = cv2.resize(bg_img, (w, h))
     return bg_img

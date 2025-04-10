@@ -174,38 +174,80 @@ class Rocket(object):
                            and abs(theta) < 10/180*np.pi and abs(vtheta) < 10/180*np.pi else False
 
     def calculate_reward(self, state):
-
         x_range = self.world_x_max - self.world_x_min
         y_range = self.world_y_max - self.world_y_min
 
-        # dist between agent and target point
+        # Distance between agent and target point
         dist_x = abs(state['x'] - self.target_x)
         dist_y = abs(state['y'] - self.target_y)
         dist_norm = dist_x / x_range + dist_y / y_range
 
-        dist_reward = 0.1*(1.0 - dist_norm)
+        # Base distance reward
+        dist_reward = 0.1 * (1.0 - dist_norm)
 
-        if abs(state['theta']) <= np.pi / 6.0:
+        # Orientation reward - encourage keeping engine down (theta near 0)
+        # Penalize more severely when the rocket is upside down (theta near pi)
+        theta_abs = abs(state['theta'])
+        if theta_abs <= np.pi / 6.0:  # Within 30 degrees of vertical
             pose_reward = 0.1
         else:
-            pose_reward = abs(state['theta']) / (0.5*np.pi)
-            pose_reward = 0.1 * (1.0 - pose_reward)
-
-        reward = dist_reward + pose_reward
-
-        if self.task == 'hover' and (dist_x**2 + dist_y**2)**0.5 <= 2*self.target_r:  # hit target
-            reward = 0.25
-        if self.task == 'hover' and (dist_x**2 + dist_y**2)**0.5 <= 1*self.target_r:  # hit target
-            reward = 0.5
-        if self.task == 'hover' and abs(state['theta']) > 90 / 180 * np.pi:
-            reward = 0
-
-        v = (state['vx'] ** 2 + state['vy'] ** 2) ** 0.5
-        if self.task == 'landing' and self.already_crash:
-            reward = (reward + 5*np.exp(-1*v/10.)) * (self.max_steps - self.step_id)
-        if self.task == 'landing' and self.already_landing:
-            reward = (1.0 + 5*np.exp(-1*v/10.))*(self.max_steps - self.step_id)
-
+            # Penalize more as theta approaches pi (upside down)
+            upside_down_factor = min(1.0, theta_abs / np.pi)
+            pose_reward = 0.1 * (1.0 - upside_down_factor**2)  # Quadratic penalty for being upside down
+        
+        # Velocity control reward - encourage slower descent when close to ground
+        v = (state['vx']**2 + state['vy']**2)**0.5
+        height_normalized = max(0, min(1, state['y'] / (self.world_y_max / 2)))
+        
+        # Velocity reward scales with height - stricter as we get closer to ground
+        if self.task == 'landing':
+            # Ideal descent velocity decreases linearly with height
+            ideal_velocity = 20 * height_normalized + 5  # 25 m/s at top, 5 m/s near ground
+            velocity_diff = abs(v - ideal_velocity) if state['vy'] < 0 else v  # Only reward when descending
+            velocity_reward = 0.1 * max(0, 1.0 - velocity_diff / 30.0)
+        else:
+            velocity_reward = 0
+        
+        # Horizontal velocity control - minimize horizontal velocity for precise landing
+        if self.task == 'landing':
+            # Penalize horizontal velocity more as we get closer to the ground
+            horizontal_penalty = 0.05 * (1.0 - height_normalized) * min(1.0, abs(state['vx']) / 10.0)
+        else:
+            horizontal_penalty = 0
+        
+        # Angular velocity control - discourage rapid rotation
+        angular_penalty = 0.05 * min(1.0, abs(state['vtheta']) / (np.pi/2))
+        
+        # Combine rewards
+        reward = dist_reward + pose_reward + velocity_reward - horizontal_penalty - angular_penalty
+        
+        # Special rewards for hover task
+        if self.task == 'hover':
+            if (dist_x**2 + dist_y**2)**0.5 <= 2*self.target_r:  # hit target
+                reward = 0.25
+            if (dist_x**2 + dist_y**2)**0.5 <= 1*self.target_r:  # hit target
+                reward = 0.5
+            if abs(state['theta']) > 90 / 180 * np.pi:
+                reward = 0
+        
+        # Landing task special rewards
+        if self.task == 'landing':
+            # Proximity to ground bonus - encourage approaching the landing pad
+            if state['y'] < 50 and abs(state['x'] - self.target_x) < self.target_r:
+                proximity_bonus = 0.1 * (1.0 - state['y'] / 50)
+                reward += proximity_bonus
+                
+            # Successful landing or crash handling
+            if self.already_crash:
+                # Scale crash penalty by velocity - higher velocity = bigger penalty
+                crash_penalty = 5 * np.exp(-1 * v / 10.)
+                reward = (reward + crash_penalty) * (self.max_steps - self.step_id)
+            if self.already_landing:
+                # Successful landing bonus scaled by remaining steps and landing quality
+                landing_quality = 5 * np.exp(-1 * v / 10.)  # Better reward for softer landings
+                orientation_quality = 1.0 - min(1.0, abs(state['theta']) / (np.pi/6))  # Better reward for upright landings
+                reward = (1.0 + landing_quality + orientation_quality) * (self.max_steps - self.step_id)
+        
         return reward
 
     def step(self, action):
