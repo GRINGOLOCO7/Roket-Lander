@@ -3,9 +3,9 @@ RL for teaching roket to land using **Soft Actor Critic** (SAC)
 
 
 
-RESULTS [HERE](https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/videos/results.mp4)
+**RESULTS [HERE](https://github.com/GRINGOLOCO7/Roket-Lander/raw/main/videos/results.mp4)**
 
-![HERE](videos/results.mp4)
+[Watch demo video](videos/results.mp4)
 
 ----
 
